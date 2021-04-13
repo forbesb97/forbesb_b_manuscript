@@ -46,11 +46,13 @@ library(glue)
 
 # ================================= User inputs ================================
 
+
 # tls_las_folder <- 'data/las'
 tls_las_folder <- 'D:/c6/c6_tls_DEMnorm_r11dot3m'
 tls_las_files <- list.files(tls_las_folder, pattern = '.las', full.names = TRUE)
 
 out_file <- 'D:/Analyses/ladder_fuel_part_process_4/c6_tls_all_ladder_fuel_metrics.csv'
+
 
 # ============ Compute density based ladder fuels metrics for TLS data ===========
 
@@ -131,13 +133,19 @@ for (tls_file in tls_las_files) {
       tls_ladder_fuel_5to8 = sum(Z > 5 & Z <= 8) / sum(Z <= 8),
       tls_ladder_fuel_6to8 = sum(Z > 6 & Z <= 8) / sum(Z <= 8),
       tls_ladder_fuel_7to8 = sum(Z > 7 & Z <= 8) / sum(Z <= 8)
-    ) %>%
+    )
+  
+  %>%
+
     add_column(campaign, plot, .before = 1)
   
   tls_combine <- tls_combine %>%
     add_row(tls_metric)
   
+
   rm(tls_las)
 }
 
 write_csv(tls_metric,out_file)
+
+
