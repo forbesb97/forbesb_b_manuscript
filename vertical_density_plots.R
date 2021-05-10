@@ -63,7 +63,7 @@ uas_las_folder <-  'D:/Analyses/ladder_fuel_vvp/uas_ladder_fuel_vvp'
   
 zeb_las_folder <-  'D:/Analyses/ladder_fuel_vvp/zeb_ladder_fuel_vvp'
 
-vvp_fig_output <- 'D:/Analyses/ladder_fuel_vvp/ladder_fuel_vvp_full_figure_210218.png'
+vvp_fig_output <- 'D:/Analyses/ladder_fuel_vvp/ladder_fuel_vvp_full_figure_210510.png'
 
 high_plot <- 26
 
@@ -644,7 +644,7 @@ zeb_transect_high <-
          mapping = aes(x = X, y = Z)) +
   geom_point(color='#900DA4FF', size = 0.4) +
   coord_equal()+
-  ggtitle('MLS')+
+  ggtitle('HMLS')+
   theme(legend.position = 'none',
         axis.text.x=element_blank(),
         axis.text.y=element_blank(), 
@@ -703,23 +703,23 @@ full_figure <-
   ggarrange(high_vvp,
             tls_transect_high,
             zeb_transect_high,
-            als_transect_high,
             uas_transect_high,
+            als_transect_high,
             eight_vvp,
             tls_transect_eight,
             zeb_transect_eight,
-            als_transect_eight,
             uas_transect_eight,
+            als_transect_eight,
             medium_vvp,
             tls_transect_medium,
             zeb_transect_medium,
-            als_transect_medium,
             uas_transect_medium,
+            als_transect_medium,
             low_vvp,
             tls_transect_low,
             zeb_transect_low,
-            als_transect_low,
             uas_transect_low,
+            als_transect_low,
             ncol = 5,
             nrow = 4,
             widths = c(4, 2, 2, 2, 2),
