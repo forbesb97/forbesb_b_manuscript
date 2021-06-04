@@ -58,7 +58,7 @@ uas_las_files <- list.files(uas_las_folder, pattern = '.las', full.names = TRUE)
 zeb_las_folder <- 'D:/c1 - Pepperwood/c1_zeb_cut2plot'
 zeb_las_files <- list.files(zeb_las_folder, pattern = '.las', full.names = TRUE)
 
-banner_data <- read_csv('D:/Analyses/ladder_fuel_jmp/Ladder fuels_airtable_210426.csv')
+banner_data <- read_csv('D:/Analyses/ladder_fuel_jmp/ladder_fuels_airtable_210426.csv')
 
 
 # out_file <- 'data/voxel_ladder-fuels.csv'
@@ -91,6 +91,7 @@ tls_combine_filter <- tibble(
   tls_ladder_fuel_6to7 = numeric(),
   tls_ladder_fuel_7to8 = numeric()
 )
+
 
 for (tls_file in tls_las_files) {
   
@@ -387,8 +388,8 @@ combined_metrics_filter <- tls_combine_filter %>%
   full_join(uas_combine_filter, by = c('campaign','plot')) %>%
   full_join(banner_summary, by = 'plot')
 
-write.csv(combined_metrics, out_file)
-write.csv(combined_metrics_filter, out_file_filtered)
+write_csv(combined_metrics, out_file)
+write_csv(combined_metrics_filter, out_file_filtered)
 
 
 # ==============================================================================
