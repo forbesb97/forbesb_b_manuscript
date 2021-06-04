@@ -63,7 +63,7 @@ uas_las_folder <-  'D:/Analyses/ladder_fuel_vvp/uas_ladder_fuel_vvp'
   
 zeb_las_folder <-  'D:/Analyses/ladder_fuel_vvp/zeb_ladder_fuel_vvp'
 
-vvp_fig_output <- 'D:/Analyses/ladder_fuel_vvp/ladder_fuel_vvp_full_figure_210510.png'
+vvp_fig_output <- 'D:/Analyses/ladder_fuel_vvp/ladder_fuel_vvp_full_figure_210602.png'
 
 high_plot <- 26
 
@@ -90,9 +90,12 @@ theme_set(
     legend.text = element_text(size = 14),
     legend.key = element_blank(),
     legend.spacing = unit(0, "cm"),
-    legend.margin = margin(0, 5, 0, 5)
-  )
+    legend.margin = margin(0, 5, 0, 5),
+    legend.background = element_rect(fill=NULL,
+                        size=0.5, linetype="solid", 
+                        colour ="black"))
 )
+
 
 # ======================== Generate high plot =========================
 
@@ -141,7 +144,7 @@ for (plot_type in c('high_plot', 'medium_plot', 'low_plot', 'eight_plot')) {
   )
   
   tls_transect <- tls_transect@data %>%
-    select(X, Z) %>%
+    dplyr::select(X, Z) %>%
     add_column(method = 'TLS',
                plot = plot_type)
   
@@ -175,8 +178,8 @@ for (plot_type in c('high_plot', 'medium_plot', 'low_plot', 'eight_plot')) {
   )
 
   zeb_transect <- zeb_transect@data %>%
-    select(X, Z) %>%
-    add_column(method = 'MLS',
+    dplyr::select(X, Z) %>%
+    add_column(method = 'HMLS',
                plot = plot_type)
 
 
@@ -186,7 +189,7 @@ zeb_z <- zeb@data %>%
     summarize(n = n()) %>%
     filter(Z > 0.5) %>%
     mutate(p = n/sum(n, na.rm = TRUE)*100) %>%
-    add_column(method = 'MLS',
+    add_column(method = 'HMLS',
                plot = plot_type) %>%
     mutate(p_smooth = data.table::frollmean(
       x = p,
@@ -209,7 +212,7 @@ zeb_z <- zeb@data %>%
   )
 
   uas_transect <- uas_transect@data %>%
-    select(X, Z) %>%
+    dplyr::select(X, Z) %>%
     add_column(method = 'UAS',
                plot = plot_type)
 
@@ -243,7 +246,7 @@ zeb_z <- zeb@data %>%
   )
   
   als_transect <- als_transect@data %>%
-    select(X, Z) %>%
+    dplyr::select(X, Z) %>%
     add_column(method = 'ALS',
                plot = plot_type)
   
@@ -277,7 +280,7 @@ zeb_z <- zeb@data %>%
 }
 
 
-z$method <- factor(z$method, levels = c("TLS", "MLS", "ALS", "UAS"))
+z$method <- factor(z$method, levels = c("TLS", "HMLS", "UAS", "ALS"))
 # =========================== Low vvp and transect ============================
 
 low_vvp <-
@@ -294,8 +297,35 @@ low_vvp <-
   theme(axis.text.x=element_text(color='black'),
         legend.position = c(0.7,0.8),
         legend.title = element_blank()) +
-  xlim(0,4) 
+  xlim(0,4) +
+  guides(color = guide_legend(override.aes = list(size = 2)))
 low_vvp
+
+low_vvp_zoom <-
+  ggplot(data = z %>% 
+           filter(plot == 'low_plot') %>%
+           arrange(Z),
+         mapping = aes(x = p_smooth, y = Z, color = method)) +
+  geom_path(size=1) +
+  scale_colour_viridis_d(option = 'C', end = 0.9)+
+  geom_hline(yintercept = 8, linetype="dashed",col = 'grey50') +
+  geom_hline(yintercept = 7, linetype="dashed",col = 'grey50') +
+  geom_hline(yintercept = 6, linetype="dashed",col = 'grey50') +
+  geom_hline(yintercept = 5, linetype="dashed",col = 'grey50') +
+  geom_hline(yintercept = 4, linetype="dashed",col = 'grey50') +
+  geom_hline(yintercept = 3, linetype="dashed",col = 'grey50') +
+  geom_hline(yintercept = 2, linetype="dashed",col = 'grey50') +
+  geom_hline(yintercept = 1, linetype="dashed",col = 'grey50') +
+  geom_hline(yintercept = 0, linetype="dashed",col = 'grey50') +
+  ylim(0,40) +
+  xlab('Percentage of points (%)')+
+  theme(axis.text=element_text(color='black'),
+        axis.title.y = element_blank(),
+        legend.position = c(0.7,0.8),
+        legend.title = element_blank()) +
+  coord_cartesian(ylim=c(0,8))+
+  guides(color = guide_legend(override.aes = list(size = 2)))
+low_vvp_zoom
 
  # plasma(4,end = 0.9 ) 
  # "#0D0887FF"- Purple/BLue TLS,  "#900DA4FF" - Purple ZEB, "#E16462FF" - Orange ALS, "#FCCE25FF" - gold UAS
@@ -309,7 +339,6 @@ tls_transect_low <-
   coord_equal()+
   theme(legend.position = 'none',
         axis.text.x=element_text(color='white', size = 16),
-        axis.text.y=element_blank(),
         axis.title.x=element_text(color='white'),
         axis.title.y=element_blank(),
         plot.title = element_text(hjust=0.5, size= 20, face='bold'),
@@ -322,7 +351,7 @@ tls_transect_low
 
 zeb_transect_low <-
   ggplot(data = transect %>%
-           filter(method == 'MLS') %>%
+           filter(method == 'HMLS') %>%
            filter(plot == 'low_plot') %>%
            sample_n(1000000),
          mapping = aes(x = X, y = Z)) +
@@ -346,7 +375,7 @@ als_transect_low <-
            filter(method == 'ALS') %>%
            filter(plot == 'low_plot'),
          mapping = aes(x = X, y = Z)) +
-  geom_point(size = 0.4, color="#E16462FF") +
+  geom_point(size = 0.4, color="#FCCE25FF") +
   coord_equal()+
   theme(legend.position = 'none',
         axis.text.x=element_text(color='white', size = 16),
@@ -366,7 +395,7 @@ uas_transect_low <-
            filter(method == 'UAS') %>%
            filter(plot == 'low_plot'),
          mapping = aes(x = X, y = Z)) +
-  geom_point(size = 0.4, color="#FCCE25FF") +
+  geom_point(size = 0.4, color="#E16462FF") +
   coord_equal() +
   theme(legend.position = 'none',
         axis.text.x=element_text(color='white', size = 16),
@@ -398,8 +427,34 @@ medium_vvp <-
   theme(axis.text.x = element_blank(),
         legend.position = c(0.7,0.8),
         legend.title = element_blank(),
-        axis.title.x =element_blank())
+        axis.title.x =element_blank())+
+  guides(color = guide_legend(override.aes = list(size = 2)))
 medium_vvp
+
+medium_vvp_zoom <-
+  ggplot(data = z %>% 
+           filter(plot == 'medium_plot') %>%
+           arrange(Z),
+         mapping = aes(x = p_smooth, y = Z, color = method)) +
+  geom_path(size=1) +
+  scale_colour_viridis_d('Method', option = 'C', end = 0.9)+
+  geom_hline(yintercept = 8, linetype="dashed",col = 'grey50') +
+  geom_hline(yintercept = 7, linetype="dashed",col = 'grey50') +
+  geom_hline(yintercept = 6, linetype="dashed",col = 'grey50') +
+  geom_hline(yintercept = 5, linetype="dashed",col = 'grey50') +
+  geom_hline(yintercept = 4, linetype="dashed",col = 'grey50') +
+  geom_hline(yintercept = 3, linetype="dashed",col = 'grey50') +
+  geom_hline(yintercept = 2, linetype="dashed",col = 'grey50') +
+  geom_hline(yintercept = 1, linetype="dashed",col = 'grey50') +
+  geom_hline(yintercept = 0, linetype="dashed",col = 'grey50') +
+  theme(axis.text.x = element_blank(),
+        legend.position = c(0.7,0.8),
+        legend.title = element_blank(),
+        axis.title =element_blank())+
+  coord_cartesian(ylim = c(0,8)) +
+  ylim(0,40)+
+  guides(color = guide_legend(override.aes = list(size = 2)))
+medium_vvp_zoom
 
 tls_transect_medium <-
   ggplot(data = transect %>%
@@ -411,7 +466,6 @@ tls_transect_medium <-
   coord_equal()+
   theme(legend.position = 'none', 
         axis.text.x=element_blank(), 
-        axis.text.y=element_blank(),
         axis.title.x=element_blank(), 
         axis.title.y=element_blank(), 
         plot.title = element_text(hjust=0.5, size= 20, face='bold'),
@@ -423,7 +477,7 @@ tls_transect_medium
 
 zeb_transect_medium <-
   ggplot(data = transect %>%
-           filter(method == 'MLS') %>%
+           filter(method == 'HMLS') %>%
            filter(plot == 'medium_plot') %>%
            sample_n(100000),
          mapping = aes(x = X, y = Z)) +
@@ -446,7 +500,7 @@ als_transect_medium <-
            filter(method == 'ALS') %>%
            filter(plot == 'medium_plot'),
          mapping = aes(x = X, y = Z)) +
-  geom_point(size = 0.4, color="#E16462FF") +
+  geom_point(size = 0.4, color="#FCCE25FF") +
   coord_equal()+
   theme(legend.position = 'none', 
         axis.text.x=element_blank(),
@@ -465,7 +519,7 @@ uas_transect_medium <-
            filter(method == 'UAS') %>%
            filter(plot == 'medium_plot'),
          mapping = aes(x = X, y = Z)) +
-  geom_point(size = 0.4, color="#FCCE25FF") +
+  geom_point(size = 0.4, color="#E16462FF") +
   coord_equal()+  
   theme(legend.position = 'none', 
         axis.text.x=element_blank(),
@@ -506,9 +560,36 @@ eight_vvp <-
                      axis.text.x = element_blank(),
                      axis.title.x =element_blank(),
                      legend.position = c(0.7,0.8),
-                     legend.title = element_blank())
+                     legend.title = element_blank())+
+  guides(color = guide_legend(override.aes = list(size = 2)))
  
 eight_vvp
+
+eight_vvp_zoom <-
+  ggplot(data = z %>% 
+           filter(plot == 'eight_plot') %>%
+           arrange(Z),
+         mapping = aes(x = p_smooth, y = Z, color = method)) +
+  geom_path(size=1) +
+  scale_colour_viridis_d('Method', option = 'C', end = 0.9)+
+  geom_hline(yintercept = 8, linetype="dashed",col = 'grey50') +
+  geom_hline(yintercept = 7, linetype="dashed",col = 'grey50') +
+  geom_hline(yintercept = 6, linetype="dashed",col = 'grey50') +
+  geom_hline(yintercept = 5, linetype="dashed",col = 'grey50') +
+  geom_hline(yintercept = 4, linetype="dashed",col = 'grey50') +
+  geom_hline(yintercept = 3, linetype="dashed",col = 'grey50') +
+  geom_hline(yintercept = 2, linetype="dashed",col = 'grey50') +
+  geom_hline(yintercept = 1, linetype="dashed",col = 'grey50') +
+  geom_hline(yintercept = 0, linetype="dashed",col = 'grey50') +
+  theme(plot.title = element_text(hjust=0.5, size= 20, face='bold'),
+        axis.text.x = element_blank(),
+        axis.title =element_blank(),
+        legend.position = c(0.7,0.8),
+        legend.title = element_blank())+
+  coord_cartesian(ylim = c(0,8)) +
+  ylim(0,40)+
+  guides(color = guide_legend(override.aes = list(size = 2)))
+eight_vvp_zoom
 
 tls_transect_eight <-
   ggplot(data = transect %>%
@@ -520,7 +601,6 @@ tls_transect_eight <-
   coord_equal()+
   theme(legend.position = 'none', 
         axis.text.x=element_blank(),
-        axis.text.y=element_blank(),
         axis.title.x=element_blank(), 
         axis.title.y=element_blank(), 
         plot.title = element_text(hjust=0.5, size= 20, face='bold'),
@@ -533,7 +613,7 @@ tls_transect_eight
 
 zeb_transect_eight <-
   ggplot(data = transect %>%
-           filter(method == 'MLS') %>%
+           filter(method == 'HMLS') %>%
            filter(plot == 'eight_plot') %>%
            sample_n(100000),
          mapping = aes(x = X, y = Z)) +
@@ -557,7 +637,7 @@ als_transect_eight <-
            filter(method == 'ALS') %>%
            filter(plot == 'eight_plot'),
          mapping = aes(x = X, y = Z)) +
-  geom_point(size = 0.4, color="#E16462FF") +
+  geom_point(size = 0.4, color="#FCCE25FF") +
   coord_equal()+
   theme(legend.position = 'none', 
         axis.text.x=element_blank(),
@@ -577,7 +657,7 @@ uas_transect_eight <-
            filter(method == 'UAS') %>%
            filter(plot == 'eight_plot'),
          mapping = aes(x = X, y = Z)) +
-  geom_point(size = 0.4, color="#FCCE25FF") +
+  geom_point(size = 0.4, color="#E16462FF") +
   coord_equal()+  
   theme(legend.position = 'none', 
         axis.text.x=element_blank(),
@@ -604,14 +684,44 @@ high_vvp <-
   ylab('High CBH plot \nabove ground height (m)')+
   geom_hline(yintercept = 8, linetype="dashed",col = 'grey50') +
   ylim(0,40) +
-  ggtitle ('Vertical Vegetation Profile') +
-  theme(plot.title = element_text(hjust=0.5, size= 20, face='bold'),
+  ggtitle ('Vertical Vegetation Profile (VVP)') +
+  theme(plot.title = element_text(hjust=0.5, size= 17, face='bold'),
         axis.text.x = element_blank(),
         axis.title.x =element_blank(),
         legend.position = c(0.7,0.8),
         legend.title = element_blank()) +
-  xlim(0,4) 
+  xlim(0,4) +
+  guides(color = guide_legend(override.aes = list(size = 2)))
 high_vvp
+
+high_vvp_zoom <-
+  ggplot(data = z %>% 
+           filter(plot == 'high_plot') %>%
+           arrange(Z),
+         mapping = aes(x = p_smooth, y = Z, color = method)) +
+  geom_path(size=1) +
+  scale_colour_viridis_d(option = 'C', end = 0.9)+
+  geom_hline(yintercept = 8, linetype="dashed",col = 'grey50') +
+  geom_hline(yintercept = 8, linetype="dashed",col = 'grey50') +
+  geom_hline(yintercept = 7, linetype="dashed",col = 'grey50') +
+  geom_hline(yintercept = 6, linetype="dashed",col = 'grey50') +
+  geom_hline(yintercept = 5, linetype="dashed",col = 'grey50') +
+  geom_hline(yintercept = 4, linetype="dashed",col = 'grey50') +
+  geom_hline(yintercept = 3, linetype="dashed",col = 'grey50') +
+  geom_hline(yintercept = 2, linetype="dashed",col = 'grey50') +
+  geom_hline(yintercept = 1, linetype="dashed",col = 'grey50') +
+  geom_hline(yintercept = 0, linetype="dashed",col = 'grey50') +
+  ggtitle ('Vertical Vegetation Profile') +
+  theme(plot.title = element_text(hjust=0.5, size= 20, face='bold'),
+        axis.text.x = element_blank(),
+        axis.title = element_blank(),
+        legend.position = c(0.7,0.8),
+        legend.title = element_blank())+
+  coord_cartesian(ylim = c(0,8)) +
+  ggtitle ('VVP under 8m') +
+  ylim(0,40)+
+  guides(color = guide_legend(override.aes = list(size = 2)))
+high_vvp_zoom
 
 # plasma(4,end = 0.9 ) 
 # "#0D0887FF"- Purple/BLue TLS,  "#900DA4FF" - Purple ZEB, "#E16462FF" - Orange ALS, "#FCCE25FF" - gold UAS
@@ -626,19 +736,18 @@ tls_transect_high <-
   ggtitle('TLS')+
   theme(legend.position = 'none',
         axis.text.x=element_blank(),
-        axis.text.y=element_blank(),
         axis.title.x=element_blank(), 
         axis.title.y=element_blank(), 
         plot.title = element_text(hjust=0.5, size= 20, face='bold'),
         axis.ticks.x = element_blank())+
   geom_hline(yintercept = 8, linetype="dashed",col = 'grey50') +
   ylim(0,40)+
-  xlim(532621, 532643)
+  xlim(532620, 532644)
 tls_transect_high
 
 zeb_transect_high <-
   ggplot(data = transect %>%
-           filter(method == 'MLS') %>%
+           filter(method == 'HMLS') %>%
            filter(plot == 'high_plot') %>%
            sample_n(1000000),
          mapping = aes(x = X, y = Z)) +
@@ -654,7 +763,7 @@ zeb_transect_high <-
         axis.ticks.x = element_blank()) +
   geom_hline(yintercept = 8, linetype="dashed",col = 'grey50') +
   ylim(0,40)+
-  xlim(532621, 532643)
+  xlim(532620, 532644)
 zeb_transect_high
 
 als_transect_high <-
@@ -662,7 +771,7 @@ als_transect_high <-
            filter(method == 'ALS') %>%
            filter(plot == 'high_plot'),
          mapping = aes(x = X, y = Z)) +
-  geom_point(size = 0.4, color="#E16462FF") +
+  geom_point(size = 0.4, color="#FCCE25FF") +
   coord_equal()+
   ggtitle('ALS')+
   theme(legend.position = 'none', 
@@ -674,7 +783,7 @@ als_transect_high <-
         axis.ticks.x = element_blank())+
   geom_hline(yintercept = 8, linetype="dashed",col = 'grey50') +
   ylim(0,40) +
-  xlim(532621, 532643)
+  xlim(532620, 532644)
 als_transect_high
 
 uas_transect_high <-
@@ -682,7 +791,7 @@ uas_transect_high <-
            filter(method == 'UAS') %>%
            filter(plot == 'high_plot'),
          mapping = aes(x = X, y = Z)) +
-  geom_point(size = 0.4, color="#FCCE25FF") +
+  geom_point(size = 0.4, color="#E16462FF") +
   coord_equal()+  
   ggtitle('UAS') +
   theme(legend.position = 'none', 
@@ -694,35 +803,39 @@ uas_transect_high <-
         axis.ticks.x = element_blank())+
   geom_hline(yintercept = 8, linetype="dashed",col = 'grey50') +
   ylim(0,40)+
-  xlim(532621, 532643)
+  xlim(532620, 532644)
 uas_transect_high
 
 # ============================ Full VVP and transect ===========================
 
 full_figure <-
   ggarrange(high_vvp,
+            high_vvp_zoom,
             tls_transect_high,
             zeb_transect_high,
             uas_transect_high,
             als_transect_high,
             eight_vvp,
+            eight_vvp_zoom,
             tls_transect_eight,
             zeb_transect_eight,
             uas_transect_eight,
             als_transect_eight,
             medium_vvp,
+            medium_vvp_zoom,
             tls_transect_medium,
             zeb_transect_medium,
             uas_transect_medium,
             als_transect_medium,
             low_vvp,
+            low_vvp_zoom,
             tls_transect_low,
             zeb_transect_low,
             uas_transect_low,
             als_transect_low,
-            ncol = 5,
+            ncol = 6,
             nrow = 4,
-            widths = c(4, 2, 2, 2, 2),
+            widths = c(4, 3.25, 2.25, 2, 2, 2),
             heights = c(4.5, 4.5, 4.5, 5)
   )
 
@@ -730,7 +843,7 @@ full_figure <-
 ggsave(
   vvp_fig_output,
   plot=full_figure,
-  width = 12,
+  width = 16,
   height = 14.5,
   units = 'in',
   dpi = 300 )
