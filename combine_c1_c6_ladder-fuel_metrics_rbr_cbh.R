@@ -26,22 +26,29 @@ banner <-read_csv('D:/Analyses/ladder_fuel_jmp/c1_ladder-fuels_metrics_tls_zeb_a
   filter(plot %in% control_plots) %>%
   select(plot, "trad_ladder_fuel_1to2","trad_ladder_fuel_2to3","trad_ladder_fuel_3to4")
 
-rbr <- read_csv('D:/Analyses/kincade_glass_fire_tls_plot_centers_sentinel2a_20m_rbr.csv') %>%
-  select(Plot, RBR_3x3avg) %>%
-  rename(plot=Plot,
-         rbr=RBR_3x3avg)
+c1_rbr <- read_csv('D:/Analyses/kincade_plot_rdnbr_rbr_with_offset.csv')%>%
+  rename(plot = Plot)%>%
+  select( "plot" ,"L8_RdNBR3x3","L8_RdNBR","L8_RBR3x3","L8_RBR")
+c6_rbr <- read_csv('D:/Analyses/saddle_mountain_plot_glass_l8_rdnbr_rbr_with_offset.csv') %>%
+  rename(plot = Plot)%>%
+  select("plot","L8_RdNBR3x3","L8_RdNBR","L8_RBR3x3","L8_RBR")
 
 #remove p or P before plot number
-rbr$plot <- stringr::str_remove(rbr$plot, 'p')
-rbr$plot <- stringr::str_remove(rbr$plot, 'P')
+c6_rbr$plot <- stringr::str_remove(c6_rbr$plot, 'p')
+c6_rbr$plot <- stringr::str_remove(c6_rbr$plot, 'P')
 
-rbr <- rbr %>%
+c1_rbr <- c1_rbr %>%
   mutate_at('plot', as.numeric)
 
+c6_rbr <- c6_rbr %>%
+  mutate_at('plot', as.numeric)
+
+rbr <- c1_rbr %>%
+  add_row(c6_rbr)
+
 #read cbh info and rename columns 
-cbh <- read_csv('D:/Analyses/c1_c6_LLC_LLF_treatmentremoved.csv') %>%
-  select(plot, "Lowest Living Canopy") %>%
-  rename(cbh="Lowest Living Canopy")
+cbh <- read_csv('D:/Analyses/c1_c6_LLC.csv') %>%
+  rename(cbh="llc_mean")
 
 #combine all data for filtered and not filtered
 
@@ -59,58 +66,141 @@ data_filter <- c1_filter %>%
 
 #add in rbr and cbh classes 
 
-data$rbr_class <-
+data$L8_RdNBR3x3_class <-
   cut(
-    data$rbr,
-    breaks = c( 0,  35, 130, 298, Inf),
-    label = c('NC', 'Low', 'Medium', 'High')
+    data$L8_RdNBR3x3,
+    breaks = c(-Inf,  69, 315, 640, Inf),
+    label = c('NC', 'Low', 'Moderate', 'High')
   )
 
-data_filter$rbr_class <-
+data_filter$L8_RdNBR3x3_class <-
   cut(
-    data_filter$rbr,
-    breaks = c( 0,  35, 130, 298, Inf),
-    label = c('NC', 'Low', 'Medium', 'High')
+    data_filter$L8_RdNBR3x3,
+    breaks = c( -Inf,  69, 315, 640, Inf),
+    label = c('NC', 'Low', 'Moderate', 'High')
   )
 
-data$rbr_jmp <-
+data$L8_RdNBR_class <-
   cut(
-    data$rbr,
-    breaks = c( 0,  35, 130, 298, Inf),
+    data$L8_RdNBR,
+    breaks = c(-Inf,  69, 315, 640, Inf),
+    label = c('NC', 'Low', 'Moderate', 'High')
+  )
+
+data_filter$L8_RdNBR_class <-
+  cut(
+    data_filter$L8_RdNBR,
+    breaks = c( -Inf,  69, 315, 640, Inf),
+    label = c('NC', 'Low', 'Moderate', 'High')
+  )
+
+data$L8_RdNBR3x3_jmp <-
+  cut(
+    data$L8_RdNBR3x3,
+    breaks = c( -Inf,  69, 315, 640, Inf),
     label = c('A', 'B', 'C', 'D')
   )
 
-data_filter$rbr_jmp <-
+data_filter$L8_RdNBR3x3_jmp <-
   cut(
-    data_filter$rbr,
-    breaks = c( 0,  35, 130, 298, Inf),
+    data_filter$L8_RdNBR3x3,
+    breaks = c(-Inf,  69, 315, 640, Inf),
     label = c('A', 'B', 'C', 'D')
   )
 
+data$L8_RdNBR_jmp <-
+  cut(
+    data$L8_RdNBR,
+    breaks = c( -Inf,  69, 315, 640, Inf),
+    label = c('A', 'B', 'C', 'D')
+  )
+
+data_filter$L8_RdNBR_jmp <-
+  cut(
+    data_filter$L8_RdNBR,
+    breaks = c(-Inf,  69, 315, 640, Inf),
+    label = c('A', 'B', 'C', 'D')
+  )
+
+data$L8_RBR3x3_class <-
+  cut(
+    data$L8_RBR3x3,
+    breaks = c(-Inf,  35, 130, 298, Inf),
+    label = c('NC', 'Low', 'Moderate', 'High')
+  )
+
+data_filter$L8_RBR3x3_class <-
+  cut(
+    data_filter$L8_RBR3x3,
+    breaks = c( -Inf,  69, 315, 640, Inf),
+    label = c('NC', 'Low', 'Moderate', 'High')
+  )
+
+data$L8_RBR_class <-
+  cut(
+    data$L8_RBR,
+    breaks = c(-Inf,  35, 130, 298, Inf),
+    label = c('NC', 'Low', 'Moderate', 'High')
+  )
+
+data_filter$L8_RBR_class <-
+  cut(
+    data_filter$L8_RBR,
+    breaks = c( -Inf,  69, 315, 640, Inf),
+    label = c('NC', 'Low', 'Moderate', 'High')
+  )
+
+data$L8_RBR3x3_jmp <-
+  cut(
+    data$L8_RBR3x3,
+    breaks = c( -Inf,  69, 315, 640, Inf),
+    label = c('E', 'F', 'G', 'H')
+  )
+
+data_filter$L8_RBR3x3_jmp <-
+  cut(
+    data_filter$L8_RBR3x3,
+    breaks = c(-Inf,  35, 130, 298, Inf),
+    label = c('E', 'F', 'G', 'H')
+  )
+
+data$L8_RBR_jmp <-
+  cut(
+    data$L8_RBR,
+    breaks = c( -Inf,  69, 315, 640, Inf),
+    label = c('E', 'F', 'G', 'H')
+  )
+
+data_filter$L8_RBR_jmp <-
+  cut(
+    data_filter$L8_RBR,
+    breaks = c(-Inf,  35, 130, 298, Inf),
+    label = c('E', 'F', 'G', 'H')
+  )
 
 data$cbh_jmp <-
   cut(
     data$cbh,
     breaks = c( 0,  3, 6, 9, Inf),
-    label = c('E', 'F', 'G', 'H')
+    label = c('I', 'J', 'K', 'L')
   )
 
 data_filter$cbh_jmp <-
   cut(
     data_filter$cbh,
     breaks = c( 0,  3, 6, 9, Inf),
-    label = c('E', 'F', 'G', 'H')
+    label = c('I', 'J', 'K', 'L')
   )
 
-write_csv(data, 'D:/Analyses/ladder_fuel_jmp/ladder-fuels_metrics_tls_zeb_als_uas_notfiltered_210426.csv')
-write_csv(data_filter, 'D:/Analyses/ladder_fuel_jmp/ladder-fuels_metrics_tls_zeb_als_uas_filtered_210426.csv')
+write_csv(data, 'D:/Analyses/ladder_fuel_jmp/ladder-fuels_metrics_tls_zeb_als_uas_notfiltered_210601.csv')
+write_csv(data_filter, 'D:/Analyses/ladder_fuel_jmp/ladder-fuels_metrics_tls_zeb_als_uas_filtered_210601.csv')
 
 #filter for burned plots only
 data_burned <- data %>%
-  filter(!is.na(rbr))
+  filter(!is.na(L8_RdNBR))
 
 data_burned_filter <- data_filter %>%
-  filter(!is.na(rbr))
+  filter(!is.na(L8_RdNBR))
 
-write_csv(data_burned, 'D:/Analyses/ladder_fuel_jmp/ladder-fuels_metrics_tls_zeb_als_uas_notfiltered_burned_210426.csv')
-write_csv(data_burned_filter, 'D:/Analyses/ladder_fuel_jmp/ladder-fuels_metrics_tls_zeb_als_uas_filtered_burned_210426.csv')
+write_csv(data_burned, 'D:/Analyses/ladder_fuel_jmp/ladder-fuels_metrics_tls_zeb_als_uas_notfiltered_burned_210601.csv')
+write_csv(data_burned_filter, 'D:/Analyses/ladder_fuel_jmp/ladder-fuels_metrics_tls_zeb_als_uas_filtered_burned_210601.csv')
